@@ -21,3 +21,6 @@ Output is JSON based which is as follows -
 or
 
     {"sentiment":"Positive"}
+    
+## Deploy
+    gcloud app deploy
