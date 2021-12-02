@@ -24,8 +24,9 @@ or
     
 ## Deploy
     gcloud app deploy
----
-Notes:
+
+
+## Notes:
 
 Why use jsonify?
 https://www.educba.com/flask-jsonify/
