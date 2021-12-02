@@ -28,5 +28,7 @@ or
 
 ## Notes:
 
-Why use jsonify?
+- Why use jsonify?
 https://www.educba.com/flask-jsonify/
+
+- Changed name from app to main.py
