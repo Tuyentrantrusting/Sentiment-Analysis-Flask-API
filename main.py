@@ -1,37 +1,36 @@
-from flask import Flask, render_template, abort, request, jsonify
+from flask import Flask, jsonify
+from flask_restful import Resource, Api, reqparse
 import nltk
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
 app = Flask(__name__)
+api = Api(app)
 
 output = {}
 
+# argument parsing
+parser = reqparse.RequestParser()
+parser.add_argument('q',help='Pass a sentence to analyse')
 
-def sentiment(sentence):
+class SentAnalysis(Resource):
 
-    nltk.download("vader_lexicon")
-    sid = SentimentIntensityAnalyzer()
-    score = sid.polarity_scores(sentence)["compound"]
-    if score > 0:
-        return "Positive"
-    else:
-        return "Negative"
+    def get(self):
 
+        # use parser and find the user's query
+        args = parser.parse_args()
+        sentence = args['q']
 
-@app.route("/", methods=["GET", "POST"])
-def sentimentRequest():
+        nltk.download("vader_lexicon")
+        sid = SentimentIntensityAnalyzer()
+        score = sid.polarity_scores(sentence)["compound"]
+        if score > 0:
+            output["sentiment"] = "Positive"    
+        else:
+            output["sentiment"] = "Negative"  
 
-    if request.method == "POST":
-        sentence = request.form["q"]
-    else:
-        sentence = request.args.get("q")
+        return jsonify(output)
 
-    sent = sentiment(sentence)
-    print(sentence)
-    output["sentiment"] = sent
-    return jsonify(output)
-
+api.add_resource(SentAnalysis, '/')
 
 if __name__ == "__main__":
-    app.run()
-
+    app.run(debug=True)
