@@ -1,16 +1,25 @@
-# https://hub.docker.com/_/python
-FROM tiangolo/uvicorn-gunicorn-fastapi:python3.8
+FROM python:3.8
 
-# Allow statements and log messages to immediately appear in the Knative logs
-ENV PYTHONUNBUFFERED True
+LABEL maintainer="Sebastian Ramirez <tiangolo@gmail.com>"
 
-# Copy local code to the container image.
-ENV APP_HOME /app
-WORKDIR $APP_HOME
-COPY . ./
+COPY requirements.txt /tmp/requirements.txt
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
-# Install production dependencies.
-RUN pip install --no-cache-dir -r requirements.txt
+COPY ./start.sh /start.sh
+RUN chmod +x /start.sh
 
-# Timeout is set to 0 to disable the timeouts of the workers to allow Cloud Run to handle instance scaling.
-CMD exec gunicorn --bind :$PORT --workers 1 --worker-class uvicorn.workers.UvicornWorker  --threads 8 main:app
+COPY ./gunicorn_conf.py /gunicorn_conf.py
+
+COPY ./start-reload.sh /start-reload.sh
+RUN chmod +x /start-reload.sh
+
+COPY ./app /app
+WORKDIR /app/
+
+ENV PYTHONPATH=/app
+
+EXPOSE 80
+
+# Run the start script, it will check for an /app/prestart.sh script (e.g. for migrations)
+# And then will start Gunicorn with Uvicorn
+CMD ["/start.sh"]
